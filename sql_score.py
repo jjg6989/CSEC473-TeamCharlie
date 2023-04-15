@@ -1,7 +1,7 @@
 import pyodbc
 from time import sleep
 
-DDATABASE='localhost'
+DDATABASE='sqli'
 
 def score_SQL(queue, alive, lock, server, value, team_num, database=DDATABASE):
     while alive():
@@ -9,6 +9,9 @@ def score_SQL(queue, alive, lock, server, value, team_num, database=DDATABASE):
             pyodbc.connect('Driver{SQL Server};'
                            f'Server={server};'
                            f'Database={database};'
+                           'UID=greyteam;'
+                           'password=letsgocharlie;'
+                           'charset=utf8mb4;'
                            'Trusted_Connection=yes;'
                            'Timeout=5;')
             

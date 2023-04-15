@@ -4,7 +4,7 @@ from time import sleep
 def score_AD(queue, alive, lock, servername, team_num, port, value=1):
     while alive():
         try:
-            l = ldap.initialize('ldap://192.168.2.3')
+            l = ldap.initialize(f'ldap://10.0.{team_num}.1')
             l.simple_bind_s()
 
             l.search('(&(objectCategory=person)(objectClass=user))', ldap.SCOPE_SUBTREE)
