@@ -5,7 +5,7 @@ DUSERNAME = 'username'
 DPASSWORD = 'password'
 DPORT = 21
 
-def score_FTP(queue, alive, lock, target,port=DPORT, value=1, username=DUSERNAME, password=DPASSWORD):
+def score_FTP(queue, alive, lock, target, team_num, port=DPORT, value=1, username=DUSERNAME, password=DPASSWORD):
     while alive():
         try:
         
@@ -15,13 +15,13 @@ def score_FTP(queue, alive, lock, target,port=DPORT, value=1, username=DUSERNAME
             
             # FTP Server connects sucessfully 
             lock.acquire()
-            queue.put({'service': 'FTP', 'status': 'UP', 'host':target, 'value':value})
+            queue.put({'service': 'FTP', 'status': 'UP', 'host':target, 'value':value, 'team_num': team_num})
             lock.release()
         except error_perm:
-            queue.put({'service': 'FTP', 'status': 'UP', 'host':target, 'value':value})
+            queue.put({'service': 'FTP', 'status': 'UP', 'host':target, 'value':value, 'team_num': team_num})
         # FTP Server failed to respond
         except:
             lock.acquire()
-            queue.put({'service': 'FTP', 'status': 'DOWN', 'host':target, 'value':value})
+            queue.put({'service': 'FTP', 'status': 'DOWN', 'host':target, 'value':value, 'team_num': team_num})
             lock.release()
         sleep(60)

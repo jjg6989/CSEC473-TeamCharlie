@@ -19,6 +19,7 @@
       pip:
         name: 
           - paramiko
+          - pandas
           - requests
           - impacket
           - icmplib
@@ -27,10 +28,8 @@
           - flask-cors
           - dnspython
           - pyodbc
-          - rocketchat-API
-          - nextcloud-api-wrapper
           - pyad
-  name: get the code from our github repo
+    - name: get the code from our github repo
       git:
         repo: https://github.com/Jpk7948/CSEC473-TeamBravo.git
         dest: ./score

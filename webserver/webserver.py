@@ -5,7 +5,7 @@ app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 services = {}
-scores = {'blue_score': 0, 'red_score' : 0}
+scores = {'blue_1_score': 0, 'blue_2_score' : 0}
 
 @app.route("/")
 def landing_page():
@@ -21,10 +21,10 @@ def display_services():
 def update_scores():
     try:
         print(f"receives {request} FROM {request.host}\n\n")
-        blue_score = request.form['blue_score']
-        red_score = request.form['red_score']
-        scores['blue_score'] = str(blue_score)
-        scores['red_score'] = str(red_score)
+        blue_1_score = request.form['blue_1_score']
+        blue_2_score = request.form['blue_2_score']
+        scores['blue_1_score'] = int(blue_1_score)
+        scores['blue_2_score'] = int(blue_2_score)
         for key in services.keys():
             print(services[key])
         print(scores)

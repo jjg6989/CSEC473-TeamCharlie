@@ -1,45 +1,42 @@
 from queue import Queue
 import sys
-import pandas as pd
 from http_score import score_HTTP
 from ssh_score import score_SSH
 from ftp_score import score_FTP
 from sql_score import score_SQL
-from smtp_score import score_SMTP
-from icmp_score import score_ICMP
 from dns_score import score_DNS
 from smb_score import score_SMB
 from ad_score import score_AD
-from imap_score import score_IMAP
-from nextcloud_score import score_NextCloud
-from rocket_chat_score import score_rocket_chat
-from rdp_score import score_RDP
+from http_score_node import score_NODE
+from http_score_nginx import score_NGINX
+from irc_score import score_IRC
 import requests
 import threading
 
 shared_queue = Queue()
 flaskServAddr = 'http://127.0.0.1:5000'
-host_list = 'services.csv'
 SCORE_FILE = 'scores.txt'
 lock = threading.Lock()
+value = 1
 
 
-def spawn_threads(alive):
+def spawn_threads(alive, team_num):
 
-    df = pd.read_csv(host_list)
+    df = open('host_list', 'r')
     threads = []
-    for idx, row in df.iterrows():
-        protocol = row['Service']
-        host = row['Host (IP)']
-        port = row['Port (Leave blank for default)']
-        value = int(row['Value'])
+    for line in df:
+        split_line = line.split(' ')
+        if team_num == 1:
+            protocol = split_line[0]
+            host = split_line[1]
+            port = split_line[2]
+        else:
+            protocol = split_line[0]
+            host = split_line[3]
+            port = split_line[4]
         # because python hates me and added match statements in 3.10
-        if protocol == 'HTTP':
+        if protocol == 'APACHE':
             target = score_HTTP
-        elif protocol == 'SMTP':
-            target = score_SMTP
-        elif protocol == 'ICMP':
-            target = score_ICMP
         elif protocol == 'DNS':
             target = score_DNS
         elif protocol == 'SSH':
@@ -50,16 +47,14 @@ def spawn_threads(alive):
             target = score_FTP
         elif protocol == 'SMB':
             target = score_SMB
-        elif protocol == 'RDP':
-            target = score_RDP
         elif protocol == 'AD':
             target = score_AD
-        elif protocol == 'RocketChat':
-            target = score_rocket_chat
-        elif protocol == 'NextCloud':
-            target = score_NextCloud
-        elif protocol == 'IMAP':
-            target = score_IMAP
+        elif protocol == 'NGINX':
+            target = score_NGINX
+        elif protocol == 'NODE':
+            target = score_NODE
+        elif protocol == 'IRC':
+            target = score_IRC
         else:
             print("Undefined protocol in input")
             exit(-1)
@@ -71,37 +66,40 @@ def spawn_threads(alive):
 def main():
     alive_bool = True
     alive = lambda : alive_bool
-    threads = spawn_threads(alive)
+    threads_blue1 = spawn_threads(alive, 1)
+    threads_blue2 = spawn_threads(alive, 2)
     # spawn the threads
-    for thread in threads:
+    for thread in threads_blue1:
+        thread.start()
+    for thread in threads_blue2:
         thread.start()
 
     # main loop
     try:
-        red_score = 0
-        blue_score = 0
+        blue1_score = 0
+        blue2_score = 0
         try: 
             f = open(SCORE_FILE, 'r')
             line = f.readline()
             scores = line.split(',')
-            print(f"Reading scores from file: blue: {scores[0]}, red: {scores[1]}")
+            print(f"Reading scores from file: blue 1: {scores[0]}, blue 2: {scores[1]}")
             # If we got this far, the score file exists and is populated.
-            blue_score = int(scores[0])
-            red_score = int(scores[1])
+            blue1_score = int(scores[0])
+            blue2_score = int(scores[1])
         except FileNotFoundError:
-            red_score = 0
-            blue_score = 0
+            blue1_score = 0
+            blue2_score = 0
 
         while(True):
             content = shared_queue.get()
             print(content)
 
-            if content['status'] == 'UP':
-                blue_score += int(content['value'])
-            else:
-                red_score += int(content['value'])
+            if content['status'] == 'UP' and content['team_num'] == 1:
+                blue1_score += int(content['value'])
+            elif content['status'] == 'UP' and content['team_num'] == 2:
+                blue2_score += int(content['value'])
             
-            print(f"Blue score: {blue_score}\n Red Score: {red_score}\n\n")
+            print(f"Blue 1 score: {blue1_score}\n Blue 2 Score: {blue2_score}\n\n")
 
 
             try:
@@ -109,7 +107,7 @@ def main():
                 res = requests.post(flaskServAddr + '/update_services', content)
                 print(f"Received response: {res} from {flaskServAddr}\n\n")
                 print(f"Posting current scores to {flaskServAddr}\n")
-                res = requests.post(flaskServAddr + '/update_scores', {'blue_score' : blue_score, 'red_score' : red_score})
+                res = requests.post(flaskServAddr + '/update_scores', {'blue_1_score' : blue1_score, 'blue_2_score' : blue2_score})
                 print(f"Received response: {res} from {flaskServAddr}\n\n")
             except requests.exceptions.ConnectionError:
                 print("Error while connecting to the webserver!", file=sys.stderr)
@@ -119,13 +117,15 @@ def main():
     alive_bool = False
 
 
-    for thread in threads:
+    for thread in threads_blue1:
+        thread.join()
+    for thread in threads_blue2:
         thread.join()
 
     print("All threads shutdown successfully!")
     print("Writing score state: ")
     with open(SCORE_FILE, 'w') as f:
-        f.write(f"{blue_score}, {red_score}")
+        f.write(f"{blue1_score}, {blue2_score}")
     
 
 
