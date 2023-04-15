@@ -59,7 +59,7 @@ def spawn_threads(alive, team_num):
             print("Undefined protocol in input")
             exit(-1)
 
-        t = threading.Thread(target=target, args=(shared_queue, alive, lock, host, port, value))
+        t = threading.Thread(target=target, args=(shared_queue, alive, lock, host, port, value, team_num))
         threads.append(t)
     return threads
 
