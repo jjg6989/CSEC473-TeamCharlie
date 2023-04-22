@@ -29,8 +29,3 @@
           - dnspython
           - pyodbc
           - pyad
-    - name: get the code from our github repo
-      git:
-        repo: https://github.com/Jpk7948/CSEC473-TeamBravo.git
-        dest: ./score
-        clone: yes    

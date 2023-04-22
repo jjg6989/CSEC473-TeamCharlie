@@ -1,7 +1,7 @@
 import ldap
 from time import sleep
 
-def score_AD(queue, alive, lock, servername, team_num, port, value=1):
+def score_AD(queue, alive, lock, servername, port, value, team_num):
     while alive():
         try:
             l = ldap.initialize(f'ldap://10.0.{team_num}.1')

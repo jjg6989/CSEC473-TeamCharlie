@@ -41,6 +41,7 @@ def spawn_threads(alive, team_num):
             target = score_DNS
         elif protocol == 'SSH':
             target = score_SSH
+            port = '22'
         elif protocol == 'SQL':
             target = score_SQL
         elif protocol == 'FTP':
@@ -114,18 +115,18 @@ def main():
 
     except KeyboardInterrupt:
         print('\n\nAttempting to exit gracefully....')
-    alive_bool = False
+        alive_bool = False
 
 
-    for thread in threads_blue1:
-        thread.join()
-    for thread in threads_blue2:
-        thread.join()
+        for thread in threads_blue1:
+            thread.join()
+        for thread in threads_blue2:
+            thread.join()
 
-    print("All threads shutdown successfully!")
-    print("Writing score state: ")
-    with open(SCORE_FILE, 'w') as f:
-        f.write(f"{blue1_score}, {blue2_score}")
+        print("All threads shutdown successfully!")
+        print("Writing score state: ")
+        with open(SCORE_FILE, 'w') as f:
+            f.write(f"{blue1_score}, {blue2_score}")
     
 
 
